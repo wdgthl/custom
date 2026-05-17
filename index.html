@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shira Custom – Заказ услуг</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --accent-gold: #f0c060;
+            --accent-purple: #a855f7;
+            --accent-pink: #e94560;
+            --text-primary: #f0e6d3;
+            --text-secondary: #9ca3af;
+            --glass-bg: rgba(18, 18, 42, 0.7);
+            --glass-border: rgba(168, 85, 247, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: url('bg.png') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10, 10, 20, 0.6);
+            z-index: 0;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+            opacity: 0;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        .lang-switch {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 5px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 30px;
+            padding: 4px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .lang-btn {
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.3s;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+        .lang-btn.active {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 32px;
+            padding: 35px 30px;
+            max-width: 850px;
+            width: 100%;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-family: 'Crimson Text', serif;
+            color: var(--text-primary);
+            font-size: 32px;
+            text-align: center;
+            text-shadow: 0 0 30px rgba(240,192,96,0.3);
+        }
+        .subtitle { text-align: center; color: var(--text-secondary); font-size: 13px; margin-bottom: 30px; }
+
+        .service-select {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .service-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .service-card:hover { background: rgba(255,255,255,0.06); transform: translateY(-3px); }
+        .service-card.selected {
+            background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(168,85,247,0.2));
+            border-color: var(--accent-purple);
+        }
+        .service-icon { font-size: 36px; margin-bottom: 8px; }
+        .service-title { color: var(--text-primary); font-size: 16px; font-weight: 600; }
+        .service-price { color: var(--accent-gold); font-size: 13px; margin-top: 4px; }
+
+        .step { display: none; animation: fadeIn 0.4s ease; }
+        .step.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            color: var(--accent-gold);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0 12px;
+            font-weight: 600;
+        }
+
+        .quick-select {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .quick-btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .quick-btn:hover { background: rgba(255,255,255,0.06); color: white; }
+        .quick-btn.selected {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+            color: white;
+        }
+
+        .counter-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+        }
+        .counter-label { color: var(--text-primary); font-size: 14px; }
+        .counter-label small { display: block; color: var(--text-secondary); font-size: 11px; }
+        .counter-controls { display: flex; align-items: center; gap: 12px; }
+        .counter-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.04);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .counter-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-purple); }
+        .counter-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            min-width: 30px;
+            text-align: center;
+        }
+        .counter-price { color: var(--text-secondary); font-size: 13px; }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .option-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-secondary);
+            padding: 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .option-btn:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+        .option-btn.selected {
+            background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(168,85,247,0.2));
+            border-color: var(--accent-purple);
+            color: white;
+        }
+        .option-btn .option-note { display: block; font-size: 10px; margin-top: 4px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            color: var(--accent-gold);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(10,10,20,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(124,58,237,0.5); }
+        .btn-secondary {
+            padding: 12px 28px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--text-secondary);
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .step-navigation { display: flex; justify-content: space-between; margin-top: 25px; gap: 12px; }
+
+        /* Чек */
+        .receipt {
+            background: rgba(10,10,20,0.95);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            color: #ffffff !important;
+        }
+        .receipt * { color: #ffffff !important; }
+        .receipt .price { color: var(--accent-gold) !important; }
+        .receipt-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            margin-top: 10px;
+            border-top: 2px solid rgba(168,85,247,0.3);
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 14px;
+        }
+        .save-warning {
+            background: rgba(233,69,96,0.2);
+            border: 2px solid var(--accent-pink);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 800;
+            font-size: 15px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,100% { border-color: var(--accent-pink); }
+            50% { border-color: #ff6b81; }
+        }
+        .socials { text-align: center; margin-top: 15px; font-size: 13px; }
+        .socials a { color: var(--accent-gold); text-decoration: none; font-weight: 600; }
+
+        @media (max-width: 700px) {
+            .service-select { grid-template-columns: 1fr; }
+            .container { padding: 20px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <!-- Переключатель языка -->
+    <div class="lang-switch">
+        <button class="lang-btn active" onclick="setLang('ru')">🇷🇺 RU</button>
+        <button class="lang-btn" onclick="setLang('en')">🇬🇧 EN</button>
+    </div>
+
+    <div class="container">
+        <h1>✨ <span data-ru="Shira Custom" data-en="Shira Custom">Shira Custom</span> ✨</h1>
+        <p class="subtitle" data-ru="Выберите тип услуги" data-en="Choose service type">Выберите тип услуги</p>
+
+        <!-- Выбор услуги -->
+        <div class="step active" id="step-service">
+            <div class="service-select">
+                <div class="service-card" data-service="custom" onclick="selectService('custom')">
+                    <div class="service-icon">🎨</div>
+                    <div class="service-title" data-ru="Кастомный адопт" data-en="Custom Adopt">Кастомный адопт</div>
+                    <div class="service-price"><span data-ru="от 400₽" data-en="from $4">от 400₽</span></div>
+                </div>
+                <div class="service-card" data-service="neuro" onclick="selectService('neuro')">
+                    <div class="service-icon">⚡</div>
+                    <div class="service-title" data-ru="Нейро-арты" data-en="Neuro Art">Нейро-арты</div>
+                    <div class="service-price"><span data-ru="150₽/шт" data-en="$1.5/pc">150₽/шт</span></div>
+                </div>
+                <div class="service-card" data-service="moodboard" onclick="selectService('moodboard')">
+                    <div class="service-icon">🌙</div>
+                    <div class="service-title" data-ru="Мудборд-кастом" data-en="Moodboard Custom">Мудборд-кастом</div>
+                    <div class="service-price"><span data-ru="450₽" data-en="$4.5">450₽</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кастом -->
+        <div class="step" id="step-custom-setup">
+            <h2>🎨 <span data-ru="Кастомный адопт" data-en="Custom Adopt">Кастомный адопт</span></h2>
+            <div class="section-title" data-ru="📐 Количество" data-en="📐 Quantity">📐 Количество</div>
+            <div class="counter-row">
+                <div class="counter-label"><span data-ru="Полнорост" data-en="Fullbody">Полнорост</span><small data-ru="400₽/шт" data-en="$4/pc">400₽/шт</small></div>
+                <div class="counter-controls">
+                    <button class="counter-btn" onclick="changeCount('fullbody', -1)">−</button>
+                    <span class="counter-value" id="count-fullbody">0</span>
+                    <button class="counter-btn" onclick="changeCount('fullbody', 1)">+</button>
+                </div>
+                <div class="counter-price"><span id="price-fullbody">0</span> <span data-ru="₽" data-en="$">₽</span></div>
+            </div>
+            <div class="counter-row">
+                <div class="counter-label"><span data-ru="Портрет" data-en="Portrait">Портрет</span><small data-ru="200₽/шт" data-en="$2/pc">200₽/шт</small></div>
+                <div class="counter-controls">
+                    <button class="counter-btn" onclick="changeCount('portrait', -1)">−</button>
+                    <span class="counter-value" id="count-portrait">0</span>
+                    <button class="counter-btn" onclick="changeCount('portrait', 1)">+</button>
+                </div>
+                <div class="counter-price"><span id="price-portrait">0</span> <span data-ru="₽" data-en="$">₽</span></div>
+            </div>
+
+            <div class="section-title" data-ru="✨ Доп. опции" data-en="✨ Extra">✨ Доп. опции</div>
+            <div class="options-grid">
+                <button class="option-btn" data-option="complex" onclick="toggleOption(this)">⚡ <span data-ru="Сложный дизайн" data-en="Complex design">Сложный дизайн</span><span class="option-note" data-ru="+200-250₽" data-en="+$2-2.5">+200-250₽</span></button>
+                <button class="option-btn" data-option="alt-outfit" onclick="toggleOption(this)">👗 <span data-ru="Альт. аутфит" data-en="Alt outfit">Альт. аутфит</span><span class="option-note" data-ru="+400₽" data-en="+$4">+400₽</span></button>
+                <button class="option-btn" data-option="pet" onclick="toggleOption(this)">🐾 <span data-ru="Питомец/предметы" data-en="Pet/items">Питомец/предметы</span><span class="option-note" data-ru="150-500₽" data-en="$1.5-5">150-500₽</span></button>
+                <button class="option-btn" data-option="nsfw" onclick="toggleOption(this)">🔞 NSFW<span class="option-note" data-ru="Без наценки" data-en="No extra">Без наценки</span></button>
+            </div>
+            <button class="btn-primary" onclick="goToCustomForm()"><span data-ru="Далее → ТЗ" data-en="Next → Brief">Далее → ТЗ</span></button>
+        </div>
+
+        <!-- Кастом: ТЗ -->
+        <div class="step" id="step-custom-form">
+            <h2>📝 <span data-ru="Заполните ТЗ" data-en="Fill the brief">Заполните ТЗ</span></h2>
+            <div class="section-title" data-ru="⚡ Быстрый выбор" data-en="⚡ Quick select">⚡ Быстрый выбор</div>
+            <div class="quick-select" id="customQuickGender">
+                <button class="quick-btn" data-val="male" onclick="selectQuick(this)">👨 <span data-ru="Мужской" data-en="Male">Мужской</span></button>
+                <button class="quick-btn" data-val="female" onclick="selectQuick(this)">👩 <span data-ru="Женский" data-en="Female">Женский</span></button>
+            </div>
+            <div class="quick-select" id="customQuickType">
+                <button class="quick-btn" data-val="human" onclick="selectQuick(this)">🧑 <span data-ru="Человек" data-en="Human">Человек</span></button>
+                <button class="quick-btn" data-val="furry" onclick="selectQuick(this)">🐾 <span data-ru="Фурри" data-en="Furry">Фурри</span></button>
+                <button class="quick-btn" data-val="zoomorph" onclick="selectQuick(this)">🦊 <span data-ru="Зооморф" data-en="Zoomorph">Зооморф</span></button>
+            </div>
+            <div class="form-group"><label data-ru="Контакты:" data-en="Contact:">Контакты:</label><input type="text" id="customContact" placeholder="@username или VK"></div>
+            <div class="form-group"><label data-ru="ТЗ:" data-en="Brief:">ТЗ:</label><textarea id="customDesc" rows="5" data-ru="Опишите персонажа..." data-en="Describe the character..."></textarea></div>
+            <button class="btn-primary" onclick="showReceipt()">✨ <span data-ru="Сформировать заказ" data-en="Generate order">Сформировать заказ</span></button>
+            <div class="step-navigation"><button class="btn-secondary" onclick="backToCustomSetup()">← <span data-ru="Назад" data-en="Back">Назад</span></button></div>
+        </div>
+
+        <!-- Мудборд: ТЗ -->
+        <div class="step" id="step-moodboard-form">
+            <h2>🌙 <span data-ru="Мудборд-кастом" data-en="Moodboard Custom">Мудборд-кастом</span></h2>
+            <p style="color:var(--text-secondary);margin-bottom:15px;" data-ru="Фикс. цена 450₽. Дизайн полностью на моё усмотрение." data-en="Fixed $4.5. Design at my discretion.">Фикс. цена 450₽. Дизайн полностью на моё усмотрение.</p>
+            <div class="section-title" data-ru="⚡ Быстрый выбор" data-en="⚡ Quick select">⚡ Быстрый выбор</div>
+            <div class="quick-select" id="moodQuickGender">
+                <button class="quick-btn" data-val="male" onclick="selectQuick(this)">👨 <span data-ru="Мужской" data-en="Male">Мужской</span></button>
+                <button class="quick-btn" data-val="female" onclick="selectQuick(this)">👩 <span data-ru="Женский" data-en="Female">Женский</span></button>
+            </div>
+            <div class="quick-select" id="moodQuickType">
+                <button class="quick-btn" data-val="human" onclick="selectQuick(this)">🧑 <span data-ru="Человек" data-en="Human">Человек</span></button>
+                <button class="quick-btn" data-val="furry" onclick="selectQuick(this)">🐾 <span data-ru="Фурри" data-en="Furry">Фурри</span></button>
+                <button class="quick-btn" data-val="zoomorph" onclick="selectQuick(this)">🦊 <span data-ru="Зооморф" data-en="Zoomorph">Зооморф</span></button>
+            </div>
+            <div class="form-group"><label data-ru="Контакты:" data-en="Contact:">Контакты:</label><input type="text" id="moodContact" placeholder="@username или VK"></div>
+            <div class="form-group"><label data-ru="ТЗ / Пожелания:" data-en="Brief / Wishes:">ТЗ / Пожелания:</label><textarea id="moodDesc" rows="5" data-ru="Опишите пожелания..." data-en="Describe your wishes..."></textarea></div>
+            <button class="btn-primary" onclick="showMoodReceipt()">✨ <span data-ru="Сформировать заказ" data-en="Generate order">Сформировать заказ</span></button>
+        </div>
+
+        <!-- Нейро-арты: количество -->
+        <div class="step" id="step-neuro-count">
+            <h2>⚡ <span data-ru="Нейро-арты" data-en="Neuro Art">Нейро-арты</span></h2>
+            <div class="counter-row">
+                <div class="counter-label"><span data-ru="Количество" data-en="Quantity">Количество</span><small data-ru="150₽/шт" data-en="$1.5/pc">150₽/шт</small></div>
+                <div class="counter-controls">
+                    <button class="counter-btn" onclick="changeNeuroCount(-1)">−</button>
+                    <span class="counter-value" id="neuroCount">1</span>
+                    <button class="counter-btn" onclick="changeNeuroCount(1)">+</button>
+                </div>
+                <div class="counter-price"><span id="neuroTotalPrice">150</span> <span data-ru="₽" data-en="$">₽</span></div>
+            </div>
+            <div class="options-grid">
+                <button class="option-btn" data-option="neuro-paired" onclick="toggleNeuroOption(this)">💑 <span data-ru="Парные арты" data-en="Paired">Парные арты</span><span class="option-note" data-ru="+100%" data-en="+100%">+100%</span></button>
+                <button class="option-btn" data-option="neuro-hard" onclick="toggleNeuroOption(this)">🎯 <span data-ru="Сложное ТЗ" data-en="Hard brief">Сложное ТЗ</span><span class="option-note" data-ru="+50%" data-en="+50%">+50%</span></button>
+                <button class="option-btn" data-option="neuro-nsfw" onclick="toggleNeuroOption(this)">🔞 NSFW</button>
+            </div>
+            <button class="btn-primary" onclick="goToNeuroForm()"><span data-ru="Далее → ТЗ" data-en="Next → Brief">Далее → ТЗ</span></button>
+        </div>
+
+        <!-- Нейро-арты: ТЗ -->
+        <div class="step" id="step-neuro-form">
+            <h2>📝 <span data-ru="ТЗ к нейро-артам" data-en="Neuro Art Briefs">ТЗ к нейро-артам</span></h2>
+            <div class="form-group"><label data-ru="Контакты:" data-en="Contact:">Контакты:</label><input type="text" id="neuroContact" placeholder="@username или VK"></div>
+            <div id="neuroArtsContainer"></div>
+            <button class="btn-primary" onclick="showNeuroReceipt()">✨ <span data-ru="Сформировать заказ" data-en="Generate order">Сформировать заказ</span></button>
+            <div class="step-navigation"><button class="btn-secondary" onclick="backToNeuroCount()">← <span data-ru="Назад" data-en="Back">Назад</span></button></div>
+        </div>
+
+        <!-- Чек -->
+        <div class="step" id="step-receipt">
+            <div id="receiptContent"></div>
+            <div class="save-warning">⚠️ <span data-ru="СОХРАНИТЕ ЧЕК! Сделайте скриншот или скачайте PDF!" data-en="SAVE THE RECEIPT! Screenshot or download PDF!">СОХРАНИТЕ ЧЕК! Сделайте скриншот или скачайте PDF!</span> ⚠️</div>
+            <button class="btn-primary" onclick="downloadPDF()">📥 PDF</button>
+            <div class="socials">
+                <span data-ru="Связь:" data-en="Contact:">Связь:</span>
+                <a href="https://vk.ru/wesstcoastt" target="_blank">VK: wesstcoastt</a> |
+                <span>Discord: runsova</span>
+            </div>
+            <button class="btn-secondary" style="width:100%;margin-top:10px;" onclick="resetAll()">🔄 <span data-ru="Новый заказ" data-en="New order">Новый заказ</span></button>
+        </div>
+    </div>
+
+    <script>
+        let lang = 'ru';
+        let serviceType = null;
+        let counts = { fullbody: 0, portrait: 0 };
+        let selectedOptions = [];
+        let neuroOptions = [];
+        let neuroCount = 1;
+        let neuroArtsTZ = [];
+        let quickGender = '', quickType = '';
+
+        const PRICES_RU = { fullbody: 400, portrait: 200, neuro: 150, altOutfit: 400, moodboard: 450 };
+        const PRICES_EN = { fullbody: 4, portrait: 2, neuro: 1.5, altOutfit: 4, moodboard: 4.5 };
+
+        function getPrice(key) {
+            return lang === 'ru' ? PRICES_RU[key] : PRICES_EN[key];
+        }
+
+        function setLang(l) {
+            lang = l;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.includes(l.toUpperCase())));
+            document.querySelectorAll('[data-ru]').forEach(el => {
+                const txt = lang === 'ru' ? el.getAttribute('data-ru') : el.getAttribute('data-en');
+                if (txt) el.textContent = txt;
+            });
+            document.querySelectorAll('[data-ru]').forEach(el => {
+                if (el.placeholder) el.placeholder = lang === 'ru' ? el.getAttribute('data-ru') : el.getAttribute('data-en');
+            });
+            updateAllPrices();
+        }
+
+        function updateAllPrices() {
+            document.getElementById('price-fullbody').textContent = counts.fullbody * getPrice('fullbody');
+            document.getElementById('price-portrait').textContent = counts.portrait * getPrice('portrait');
+            document.getElementById('neuroTotalPrice').textContent = neuroCount * getPrice('neuro');
+        }
+
+        function createParticles() {
+            const c = document.getElementById('particles');
+            if(!c) return;
+            const cl = ['#f0c060','#a855f7','#22d3ee','#e94560','#ffffff'];
+            for(let i=0;i<40;i++){
+                const p=document.createElement('div');
+                p.classList.add('particle');
+                const s=Math.random()*3+1;
+                p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${cl[Math.floor(Math.random()*cl.length)]};animation-duration:${Math.random()*8+6}s;animation-delay:${Math.random()*8}s`;
+                c.appendChild(p);
+            }
+        }
+
+        function selectService(type) {
+            serviceType = type;
+            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-service="${type}"]`).classList.add('selected');
+            hideAllSteps();
+            if (type === 'custom') document.getElementById('step-custom-setup').classList.add('active');
+            else if (type === 'moodboard') document.getElementById('step-moodboard-form').classList.add('active');
+            else { document.getElementById('step-neuro-count').classList.add('active'); neuroCount = 1; neuroOptions = []; updateAllPrices(); }
+        }
+
+        function hideAllSteps() {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        }
+
+        function selectQuick(btn) {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            if (parent.id.includes('Gender')) quickGender = btn.dataset.val;
+            if (parent.id.includes('Type')) quickType = btn.dataset.val;
+        }
+
+        function changeCount(type, delta) {
+            counts[type] = Math.max(0, counts[type] + delta);
+            document.getElementById('count-' + type).textContent = counts[type];
+            updateAllPrices();
+        }
+
+        function toggleOption(btn) {
+            btn.classList.toggle('selected');
+            const opt = btn.dataset.option;
+            if (btn.classList.contains('selected')) selectedOptions.push(opt);
+            else selectedOptions = selectedOptions.filter(o => o !== opt);
+        }
+
+        function toggleNeuroOption(btn) {
+            btn.classList.toggle('selected');
+            const opt = btn.dataset.option;
+            if (btn.classList.contains('selected')) neuroOptions.push(opt);
+            else neuroOptions = neuroOptions.filter(o => o !== opt);
+        }
+
+        function goToCustomForm() { hideAllSteps(); document.getElementById('step-custom-form').classList.add('active'); }
+        function backToCustomSetup() { hideAllSteps(); document.getElementById('step-custom-setup').classList.add('active'); }
+
+        function changeNeuroCount(delta) {
+            neuroCount = Math.max(1, neuroCount + delta);
+            updateAllPrices();
+            document.getElementById('neuroCount').textContent = neuroCount;
+        }
+        function goToNeuroForm() { hideAllSteps(); document.getElementById('step-neuro-form').classList.add('active'); buildNeuroForms(); }
+        function backToNeuroCount() { hideAllSteps(); document.getElementById('step-neuro-count').classList.add('active'); }
+
+        function buildNeuroForms() {
+            const container = document.getElementById('neuroArtsContainer');
+            container.innerHTML = '';
+            for (let i = 0; i < neuroCount; i++) {
+                const div = document.createElement('div');
+                div.style.cssText = 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:8px;';
+                div.innerHTML = `<label style="color:var(--accent-gold);font-size:12px;">Арт ${i+1}</label>
+                    <textarea rows="2" class="neuro-tz" placeholder="ТЗ для арта ${i+1}..." style="margin-top:8px;">${neuroArtsTZ[i] || ''}</textarea>`;
+                container.appendChild(div);
+            }
+        }
+
+        function calcCustomTotal() {
+            let t = counts.fullbody * getPrice('fullbody') + counts.portrait * getPrice('portrait');
+            if (selectedOptions.includes('alt-outfit')) t += getPrice('altOutfit');
+            return t;
+        }
+
+        function calcNeuroTotal() {
+            let base = neuroCount * getPrice('neuro');
+            if (neuroOptions.includes('neuro-paired')) base *= 2;
+            if (neuroOptions.includes('neuro-hard')) base *= 1.5;
+            return Math.round(base * 10) / 10;
+        }
+
+        function currencySymbol() { return lang === 'ru' ? '₽' : '$'; }
+        function currencyName() { return lang === 'ru' ? '₽' : 'USD'; }
+
+        function showReceipt() {
+            const contact = document.getElementById('customContact').value.trim();
+            const desc = document.getElementById('customDesc').value.trim();
+            if (!contact || !desc) { alert(lang==='ru'?'Заполните контакты и ТЗ!':'Fill contact and brief!'); return; }
+            let total = calcCustomTotal();
+            let html = `<div class="receipt"><div style="text-align:center;margin-bottom:20px;"><div style="font-size:28px;color:var(--accent-gold);">✦ Shira Custom ✦</div><div style="font-size:11px;color:var(--text-secondary);">${lang==='ru'?'Заказ':'Order'} №${Date.now().toString().slice(-6)}</div></div>`;
+            html += `<div class="receipt-row"><span>📞 ${lang==='ru'?'Контакты':'Contact'}</span><span>${contact}</span></div>`;
+            if (quickGender) html += `<div class="receipt-row"><span>⚧ ${lang==='ru'?'Пол':'Gender'}</span><span>${quickGender}</span></div>`;
+            if (quickType) html += `<div class="receipt-row"><span>🐾 ${lang==='ru'?'Вид':'Type'}</span><span>${quickType}</span></div>`;
+            html += `<div style="margin:15px 0;border-top:1px dashed rgba(255,255,255,0.15);"></div>`;
+            if (counts.fullbody > 0) html += `<div class="receipt-row"><span>🎨 ${lang==='ru'?'Полнорост':'Fullbody'} ×${counts.fullbody}</span><span class="price">${counts.fullbody * getPrice('fullbody')} ${currencySymbol()}</span></div>`;
+            if (counts.portrait > 0) html += `<div class="receipt-row"><span>🖼️ ${lang==='ru'?'Портрет':'Portrait'} ×${counts.portrait}</span><span class="price">${counts.portrait * getPrice('portrait')} ${currencySymbol()}</span></div>`;
+            if (selectedOptions.includes('alt-outfit')) html += `<div class="receipt-row"><span>👗 ${lang==='ru'?'Альт. аутфит':'Alt outfit'}</span><span class="price">${getPrice('altOutfit')} ${currencySymbol()}</span></div>`;
+            if (selectedOptions.includes('complex')) html += `<div class="receipt-row"><span>⚡ ${lang==='ru'?'Сложный дизайн':'Complex'}</span><span class="price">200-250 ${currencySymbol()}</span></div>`;
+            if (selectedOptions.includes('pet')) html += `<div class="receipt-row"><span>🐾 ${lang==='ru'?'Питомец/предметы':'Pet/items'}</span><span class="price">150-500 ${currencySymbol()}</span></div>`;
+            if (selectedOptions.includes('nsfw')) html += `<div class="receipt-row"><span>🔞 NSFW</span><span class="price">0 ${currencySymbol()}</span></div>`;
+            html += `<div class="receipt-total"><span>💰 ${lang==='ru'?'Итого':'Total'}</span><span style="font-size:24px;">${lang==='ru'?'от ':''}${total} ${currencySymbol()}</span></div>`;
+            html += `<div style="margin:15px 0;border-top:1px dashed rgba(255,255,255,0.15);"></div><div style="background:rgba(168,85,247,0.1);border-radius:10px;padding:12px;"><strong style="color:var(--accent-gold);">📝 ТЗ:</strong><p style="margin-top:5px;">${desc}</p></div></div>`;
+            showFinalStep(html);
+        }
+
+        function showMoodReceipt() {
+            const contact = document.getElementById('moodContact').value.trim();
+            const desc = document.getElementById('moodDesc').value.trim();
+            if (!contact || !desc) { alert(lang==='ru'?'Заполните контакты и ТЗ!':'Fill contact and brief!'); return; }
+            let price = getPrice('moodboard');
+            let html = `<div class="receipt"><div style="text-align:center;margin-bottom:20px;"><div style="font-size:28px;color:var(--accent-gold);">✦ Shira Custom ✦</div><div style="font-size:11px;color:var(--text-secondary);">${lang==='ru'?'Заказ':'Order'} №${Date.now().toString().slice(-6)}</div></div>`;
+            html += `<div class="receipt-row"><span>📞 ${lang==='ru'?'Контакты':'Contact'}</span><span>${contact}</span></div>`;
+            if (quickGender) html += `<div class="receipt-row"><span>⚧ ${lang==='ru'?'Пол':'Gender'}</span><span>${quickGender}</span></div>`;
+            if (quickType) html += `<div class="receipt-row"><span>🐾 ${lang==='ru'?'Вид':'Type'}</span><span>${quickType}</span></div>`;
+            html += `<div style="margin:15px 0;border-top:1px dashed rgba(255,255,255,0.15);"></div>`;
+            html += `<div class="receipt-row"><span>🌙 ${lang==='ru'?'Мудборд-кастом':'Moodboard Custom'}</span><span class="price">${price} ${currencySymbol()}</span></div>`;
+            html += `<div class="receipt-total"><span>💰 ${lang==='ru'?'Итого':'Total'}</span><span style="font-size:24px;">${price} ${currencySymbol()}</span></div>`;
+            html += `<div style="margin:15px 0;border-top:1px dashed rgba(255,255,255,0.15);"></div><div style="background:rgba(168,85,247,0.1);border-radius:10px;padding:12px;"><strong style="color:var(--accent-gold);">📝 ТЗ:</strong><p style="margin-top:5px;">${desc}</p></div></div>`;
+            showFinalStep(html);
+        }
+
+        function showNeuroReceipt() {
+            const contact = document.getElementById('neuroContact').value.trim();
+            if (!contact) { alert(lang==='ru'?'Укажите контакты!':'Fill contact!'); return; }
+            neuroArtsTZ = [];
+            document.querySelectorAll('.neuro-tz').forEach(ta => neuroArtsTZ.push(ta.value.trim()));
+            let total = calcNeuroTotal();
+            let html = `<div class="receipt"><div style="text-align:center;margin-bottom:20px;"><div style="font-size:28px;color:var(--accent-gold);">✦ Shira Custom ✦</div><div style="font-size:11px;color:var(--text-secondary);">${lang==='ru'?'Заказ':'Order'} №${Date.now().toString().slice(-6)}</div></div>`;
+            html += `<div class="receipt-row"><span>📞 ${lang==='ru'?'Контакты':'Contact'}</span><span>${contact}</span></div><div style="margin:15px 0;border-top:1px dashed rgba(255,255,255,0.15);"></div>`;
+            html += `<div class="receipt-row"><span>⚡ ${lang==='ru'?'Нейро-арты':'Neuro art'} ×${neuroCount}</span><span class="price">${neuroCount * getPrice('neuro')} ${currencySymbol()}</span></div>`;
+            if (neuroOptions.includes('neuro-paired')) html += `<div class="receipt-row"><span>💑 ${lang==='ru'?'Парные (+100%)':'Paired (+100%)'}</span><span class="price">×2</span></div>`;
+            if (neuroOptions.includes('neuro-hard')) html += `<div class="receipt-row"><span>🎯 ${lang==='ru'?'Сложное ТЗ (+50%)':'Hard brief (+50%)'}</span><span class="price">×1.5</span></div>`;
+            if (neuroOptions.includes('neuro-nsfw')) html += `<div class="receipt-row"><span>🔞 NSFW</span><span class="price">0</span></div>`;
+            html += `<div class="receipt-total"><span>💰 ${lang==='ru'?'Итого':'Total'}</span><span style="font-size:24px;">${total} ${currencySymbol()}</span></div>`;
+            html += `<div style="margin:15px 0;border-top:1px dashed rgba(255,255,255,0.15);"></div><div style="background:rgba(168,85,247,0.1);border-radius:10px;padding:12px;"><strong style="color:var(--accent-gold);">📝 ТЗ:</strong>`;
+            neuroArtsTZ.forEach((tz, i) => html += `<p style="margin-top:5px;"><em>${lang==='ru'?'Арт':'Art'} ${i+1}:</em> ${tz || '(не указано)'}</p>`);
+            html += `</div></div>`;
+            showFinalStep(html);
+        }
+
+        function showFinalStep(html) {
+            hideAllSteps();
+            document.getElementById('step-receipt').classList.add('active');
+            document.getElementById('receiptContent').innerHTML = html;
+        }
+
+        function downloadPDF() {
+            html2pdf().set({
+                margin: 10,
+                filename: 'ShiraCustom_Order.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(document.getElementById('receiptContent')).save();
+        }
+
+        function resetAll() {
+            counts = { fullbody: 0, portrait: 0 };
+            selectedOptions = [];
+            neuroOptions = [];
+            neuroCount = 1;
+            neuroArtsTZ = [];
+            quickGender = '';
+            quickType = '';
+            serviceType = null;
+            document.getElementById('count-fullbody').textContent = '0';
+            document.getElementById('count-portrait').textContent = '0';
+            document.querySelectorAll('.option-btn.selected').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.quick-btn.selected').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+            updateAllPrices();
+            document.getElementById('neuroCount').textContent = '1';
+            hideAllSteps();
+            document.getElementById('step-service').classList.add('active');
+        }
+
+        createParticles();
+    </script>
+</body>
+</html>
